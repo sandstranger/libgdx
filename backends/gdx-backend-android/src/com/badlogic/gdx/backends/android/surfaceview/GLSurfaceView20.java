@@ -21,6 +21,7 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.SystemClock;
+import android.system.Os;
 import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -45,12 +46,28 @@ public class GLSurfaceView20 extends GLSurfaceView {
 	static String TAG = "GL2JNIView";
 	private static final boolean DEBUG = false;
 
+	public static int actualX, actualY;
+	public static int fixedWidth;
+	public static int fixedHeight;
+
 	final ResolutionStrategy resolutionStrategy;
 	static int targetGLESVersion;
 	public OnscreenKeyboardType onscreenKeyboardType = OnscreenKeyboardType.Default;
 
+	static {
+		try {
+			fixedWidth = Integer.parseInt(Os.getenv("SCREEN_WIDTH"));
+			fixedHeight = Integer.parseInt(Os.getenv("SCREEN_HEIGHT"));
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+
+	}
+
 	public GLSurfaceView20 (Context context, ResolutionStrategy resolutionStrategy, int targetGLESVersion) {
 		super(context);
+
 		GLSurfaceView20.targetGLESVersion = targetGLESVersion;
 		this.resolutionStrategy = resolutionStrategy;
 		init(false, 16, 0);
@@ -64,13 +81,29 @@ public class GLSurfaceView20 extends GLSurfaceView {
 		super(context);
 		this.resolutionStrategy = resolutionStrategy;
 		init(translucent, depth, stencil);
-
 	}
 
 	@Override
 	protected void onMeasure (int widthMeasureSpec, int heightMeasureSpec) {
-		ResolutionStrategy.MeasuredDimension measures = resolutionStrategy.calcMeasures(widthMeasureSpec, heightMeasureSpec);
-		setMeasuredDimension(measures.width, measures.height);
+		if (fixedWidth > 0) {
+			int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+			int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+			float myAspect = 1.0f * fixedWidth / fixedHeight;
+			float resultWidth = widthSize;
+			float resultHeight = resultWidth / myAspect;
+			if (resultHeight > heightSize) {
+				resultHeight = heightSize;
+				resultWidth = resultHeight * myAspect;
+			}
+
+			setMeasuredDimension((int) resultWidth, (int) resultHeight);
+		}
+		else {
+			ResolutionStrategy.MeasuredDimension measures = resolutionStrategy.calcMeasures(widthMeasureSpec, heightMeasureSpec);
+			setMeasuredDimension(measures.width, measures.height);
+		}
+		//setMeasuredDimension(640,480);
 	}
 
 	@Override
@@ -113,7 +146,16 @@ public class GLSurfaceView20 extends GLSurfaceView {
 	}
 
 	private void init (boolean translucent, int depth, int stencil) {
-
+		if (fixedWidth>0) {
+			this.post(new Runnable() {
+				@Override
+				public void run() {
+					actualX = getWidth();
+					actualY = getHeight();
+					getHolder().setFixedSize(fixedWidth, fixedHeight);
+				}
+			});
+		}
 		/*
 		 * By default, GLSurfaceView() creates a RGB_888 opaque surface. If we want a translucent one, we should change the
 		 * surface's format here, using PixelFormat.TRANSLUCENT for GL Surfaces is interpreted as any 32-bit surface with alpha by

@@ -22,6 +22,7 @@ import android.view.MotionEvent;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.backends.android.DefaultAndroidInput.TouchEvent;
+import com.badlogic.gdx.backends.android.surfaceview.GLSurfaceView20;
 
 import java.util.Arrays;
 
@@ -47,8 +48,16 @@ public class AndroidTouchHandler {
 				realPointerIndex = input.getFreePointerIndex(); // get a free pointer index as reported by Input.getX() etc.
 				if (realPointerIndex >= DefaultAndroidInput.NUM_TOUCHES) break;
 				input.realId[realPointerIndex] = pointerId;
-				x = (int)event.getX(pointerIndex);
-				y = (int)event.getY(pointerIndex);
+
+				if (GLSurfaceView20.fixedWidth > 0){
+					x = (int)event.getX(pointerIndex) * GLSurfaceView20.fixedWidth / GLSurfaceView20.actualX;
+					y = (int)event.getY(pointerIndex) * GLSurfaceView20.fixedHeight / GLSurfaceView20.actualY;
+				}
+				else {
+					x = (int)event.getX(pointerIndex);
+					y = (int)event.getY(pointerIndex);
+				}
+
 				button = toGdxButton(event.getButtonState());
 				if (button != -1) postTouchEvent(input, TouchEvent.TOUCH_DOWN, x, y, realPointerIndex, button, timeStamp);
 				input.touchX[realPointerIndex] = x;
@@ -68,8 +77,14 @@ public class AndroidTouchHandler {
 				if (realPointerIndex == -1) break;
 				if (realPointerIndex >= DefaultAndroidInput.NUM_TOUCHES) break;
 				input.realId[realPointerIndex] = -1;
-				x = (int)event.getX(pointerIndex);
-				y = (int)event.getY(pointerIndex);
+				if (GLSurfaceView20.fixedWidth > 0){
+					x = (int)event.getX(pointerIndex) * GLSurfaceView20.fixedWidth / GLSurfaceView20.actualX;
+					y = (int)event.getY(pointerIndex) * GLSurfaceView20.fixedHeight / GLSurfaceView20.actualY;
+				}
+				else {
+					x = (int)event.getX(pointerIndex);
+					y = (int)event.getY(pointerIndex);
+				}
 				button = input.button[realPointerIndex];
 				if (button != -1) {
 					if (action == MotionEvent.ACTION_CANCEL)
@@ -95,8 +110,14 @@ public class AndroidTouchHandler {
 				for (int i = 0; i < pointerCount; i++) {
 					pointerIndex = i;
 					pointerId = event.getPointerId(pointerIndex);
-					x = (int)event.getX(pointerIndex);
-					y = (int)event.getY(pointerIndex);
+					if (GLSurfaceView20.fixedWidth > 0){
+						x = (int)event.getX(pointerIndex) * GLSurfaceView20.fixedWidth / GLSurfaceView20.actualX;
+						y = (int)event.getY(pointerIndex) * GLSurfaceView20.fixedHeight / GLSurfaceView20.actualY;
+					}
+					else {
+						x = (int)event.getX(pointerIndex);
+						y = (int)event.getY(pointerIndex);
+					}
 					realPointerIndex = input.lookUpPointerIndex(pointerId);
 					if (realPointerIndex == -1) continue;
 					if (realPointerIndex >= DefaultAndroidInput.NUM_TOUCHES) break;

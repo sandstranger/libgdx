@@ -303,8 +303,15 @@ public class AndroidGraphics extends AbstractGraphics implements Renderer {
 
 	@Override
 	public void onSurfaceChanged (javax.microedition.khronos.opengles.GL10 gl, int width, int height) {
-		this.width = width;
-		this.height = height;
+		if (GLSurfaceView20.fixedWidth > 0 ){
+			this.width = GLSurfaceView20.fixedWidth;
+			this.height = GLSurfaceView20.fixedHeight;
+		}
+		else {
+			this.width = width;
+			this.height = height;
+		}
+
 		updatePpi();
 		updateSafeAreaInsets();
 		gl.glViewport(0, 0, this.width, this.height);
@@ -335,9 +342,15 @@ public class AndroidGraphics extends AbstractGraphics implements Renderer {
 
 		logManagedCachesStatus();
 
-		Display display = app.getWindowManager().getDefaultDisplay();
-		this.width = display.getWidth();
-		this.height = display.getHeight();
+		if (GLSurfaceView20.fixedWidth > 0){
+			this.width = GLSurfaceView20.fixedWidth;
+			this.height = GLSurfaceView20.fixedHeight;
+		}
+		else {
+			Display display = app.getWindowManager().getDefaultDisplay();
+			this.width = display.getWidth();
+			this.height = display.getHeight();
+		}
 		this.lastFrameTime = System.nanoTime();
 
 		gl.glViewport(0, 0, this.width, this.height);

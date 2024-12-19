@@ -21,15 +21,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
+
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.backends.android.keyboardheight.AndroidXKeyboardHeightProvider;
 import com.badlogic.gdx.backends.android.keyboardheight.KeyboardHeightProvider;
@@ -166,7 +170,18 @@ public class AndroidApplication extends Activity implements AndroidApplicationBa
 			}
 			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-			setContentView(graphics.getView(), createLayoutParams());
+
+			RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+			params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+
+			graphics.getView().setLayoutParams(params);
+
+			RelativeLayout relativeLayout = new RelativeLayout(this);
+			relativeLayout.setBackgroundColor(Color.BLACK);
+			relativeLayout.addView(graphics.getView());
+
+			setContentView(relativeLayout, createLayoutParams());
 		}
 
 		createWakeLock(config.useWakelock);
